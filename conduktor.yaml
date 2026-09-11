@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: conduktor-postgres-pvc
+  namespace: conduktor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conduktor-postgres
+  namespace: conduktor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conduktor-postgres
+  template:
+    metadata:
+      labels:
+        app: conduktor-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          env:
+            - name: POSTGRES_DB
+              value: "conduktor-console"
+            - name: POSTGRES_USER
+              value: "conduktor"
+            - name: POSTGRES_PASSWORD
+              value: "conduktor-pass"
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: conduktor-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: conduktor-postgres
+  namespace: conduktor
+spec:
+  selector:
+    app: conduktor-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conduktor-console
+  namespace: conduktor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conduktor-console
+  template:
+    metadata:
+      labels:
+        app: conduktor-console
+    spec:
+      containers:
+        - name: conduktor-console
+          image: conduktor/conduktor-console:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 2Gi
+            limits:
+              cpu: 500m
+              memory: 2Gi
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms512m -Xmx1500m"
+            - name: CDK_DATABASE_HOST
+              value: "conduktor-postgres"
+            - name: CDK_DATABASE_PORT
+              value: "5432"
+            - name: CDK_DATABASE_NAME
+              value: "conduktor-console"
+            - name: CDK_DATABASE_USERNAME
+              value: "conduktor"
+            - name: CDK_DATABASE_PASSWORD
+              value: "conduktor-pass"
+            - name: CDK_KAFKACLUSTERS_0_ID
+              value: "automq-cluster"
+            - name: CDK_KAFKACLUSTERS_0_NAME
+              value: "AutoMQ"
+            - name: CDK_KAFKACLUSTERS_0_BOOTSTRAPSERVERS
+              value: "automq-broker.automq.svc.cluster.local:9092"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: conduktor-console
+  namespace: conduktor
+spec:
+  type: LoadBalancer
+  selector:
+    app: conduktor-console
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
