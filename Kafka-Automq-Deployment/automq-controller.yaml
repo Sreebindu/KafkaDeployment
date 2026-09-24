@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: automq-controller
+  namespace: automq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: automq-controller
+  template:
+    metadata:
+      labels:
+        app: automq-controller
+    spec:
+      containers:
+        - name: controller
+          image: automqinc/automq:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              exec /opt/kafka/scripts/start.sh up \
+                --process.roles controller \
+                --node.id 0 \
+                --controller.quorum.voters 0@automq-controller.automq.svc:9093 \
+                --s3.endpoint http://192.168.10.71:7480 \
+                --s3.region us-east-1 \
+                --s3.bucket automq-data \
+                --cluster.id rZdE0DjZSrqy96PXrMUZVw \
+                --s3.access.key $KAFKA_S3_ACCESS_KEY \
+                --s3.secret.key $KAFKA_S3_SECRET_KEY
+          env:
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xms256m -Xmx1g"
+            - name: KAFKA_CFG_AUTHORIZER_CLASS_NAME
+              value: "org.apache.kafka.metadata.authorizer.StandardAuthorizer"
+
+            - name: KAFKA_CFG_SUPER_USERS
+              value: "User:ANONYMOUS"
+
+            - name: KAFKA_CFG_S3_WAL_PATH
+              value: "0@s3://automq-wal?region=us-east-1&endpoint=http://192.168.10.71:7480&authType=static"
+            - name: KAFKA_S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: automq-s3-credentials
+                  key: access_key
+            - name: KAFKA_S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: automq-s3-credentials
+                  key: secret_key
+          ports:
+            - containerPort: 9093
+              name: controller
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: automq-controller
+  namespace: automq
+spec:
+  clusterIP: None
+  selector:
+    app: automq-controller
+  ports:
+    - port: 9093
+      name: controller

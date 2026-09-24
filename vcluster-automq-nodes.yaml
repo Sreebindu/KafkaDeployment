@@ -1,5 +1,0 @@
-experimental:
-  docker:
-    nodes:
-      - name: "automq-worker-1"
-      - name: "automq-worker-2"
