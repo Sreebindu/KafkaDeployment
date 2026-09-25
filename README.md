@@ -10,8 +10,8 @@ Complete these three prerequisites on the AutoMQ VM before running:
 Environment: AutoMQ VM : 192.168.10.70 Ceph VM : 192.168.10.71 Ceph user
 : rook-ceph Vault : http://127.0.0.1:8200
 
-====================================================================== 1.
-CONFIGURE PASSWORDLESS SSH FROM AUTOMQ TO CEPH
+====================================================================== 
+1. CONFIGURE PASSWORDLESS SSH FROM AUTOMQ TO CEPH
 ======================================================================
 
 Run these commands on the AutoMQ VM (192.168.10.70).
