@@ -114,7 +114,9 @@ Then verify:
     vault status | grep -E 'Initialized|Sealed'
 
 ======================================================================
+
 3. BOOTSTRAP VAULT WITH CEPH CREDENTIALS
+   
 ======================================================================
 
 Go to the deployment repository:
