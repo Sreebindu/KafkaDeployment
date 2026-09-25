@@ -159,7 +159,9 @@ Successful completion should display:
 and PASS results for the bootstrap validation checks.
 
 ======================================================================
+
 RUN AUTOMQ DEPLOYMENT
+
 ======================================================================
 
 After all three prerequisites succeed:
@@ -171,7 +173,9 @@ After all three prerequisites succeed:
     bash deploy-automq.sh
 
 ======================================================================
+
 SIMPLE EXECUTION FLOW
+
 ======================================================================
 
     1. AutoMQ -> Ceph passwordless SSH
@@ -189,7 +193,9 @@ SIMPLE EXECUTION FLOW
     4. deploy-automq.sh
 
 ======================================================================
+
 NORMAL RERUN / AFTER VM REBOOT
+
 ======================================================================
 
 You do NOT need to recreate the SSH key. You do NOT need to run
@@ -220,7 +226,9 @@ Then run:
     bash deploy-automq.sh
 
 ======================================================================
+
 IMPORTANT
+
 ======================================================================
 
 Never store the following in Git or the deployment repository:
