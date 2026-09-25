@@ -1342,7 +1342,7 @@ if [[ "$CONDUKTOR_PF_RUNNING" == "false" ]]; then
 
     info "Starting Conduktor Console port-forward on 0.0.0.0:8080..."
     rm -f "$CONDUKTOR_PF_LOG"
-
+    sleep 3
     nohup kubectl port-forward \
         -n "$CONDUKTOR_NAMESPACE" \
         "svc/$CONDUKTOR_SERVICE" \
